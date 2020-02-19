@@ -2,3 +2,4 @@ name: poc-drupal-architecture
 recipe: drupal8
 config:
   webroot: .
+  database: mysql
