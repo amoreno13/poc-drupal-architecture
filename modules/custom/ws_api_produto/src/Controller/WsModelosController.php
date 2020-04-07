@@ -9,23 +9,18 @@
 
 namespace Drupal\ws_api_produto\Controller;
 
-use Drupal\taxonomy\Entity\Term;
 use Drupal\Core\Controller\ControllerBase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
-
+use Drupal\ws_api_produto\Service\ModelosService;
 
 class WsModelosController extends ControllerBase
 {
-  
-  public function call(Request $request)
+  public function call()
   {
-    $terms = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->loadTree('modelo');
-    foreach ($terms as $term) {
-      $data[] =  $term->name ;
-    }
+    $modelos = new ModelosService();
+    $response = $modelos->sendRequest();
     
-    return new JsonResponse($data);
+    return new JsonResponse($response);
   }
-
 }
