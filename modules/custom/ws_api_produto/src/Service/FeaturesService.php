@@ -5,21 +5,27 @@ namespace Drupal\ws_api_produto\Service;
 use Drupal\taxonomy\Entity\Term;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Drupal\ws_api_produto\Service\ColorService;
 
 
 class FeaturesService
 {
 
   private $result;
+  private $dataColors;
 
   public function sendRequest()
   {
-    $nodes  = $this->getNodes('veiculo');
-    $models = $this->getTaxonomy('modelo');
+    $colors = new ColorService();
+    $this->dataColors = $colors->sendRequest();
+
+    $nodes    = $this->getNodes('veiculo');
+    $models   = $this->getTaxonomy('modelo');
+    $versions =  $this->getTaxonomy('versoes');
 
     foreach ($nodes as $entity) {
       $model = $models[$entity->get('field_veiculo_modelo')->getString()];
-      $version = taxonomy_term_load($entity->get('field_veiculo_versao')->getString())->getName();
+      $version = $versions[$entity->get('field_veiculo_versao')->getString()];
       
       $this->setFeatures($entity, $model, $version);
     }
@@ -60,9 +66,9 @@ class FeaturesService
   }
 
   public function setFeatures($entity, $model, $version){
-    $modelo     = str_replace('-','',strtolower($model));
-    $price      = $entity->get('field_veiculo_preco_base')->getString();
-    $thumbnail  = file_create_url($entity->get('field_veiculo_thumbnail')->entity->uri->value);
+    $modelo         = str_replace('-','',strtolower($model));
+    $price          = $entity->get('field_veiculo_preco_base')->getString();
+    $thumbnail      = file_create_url($entity->get('field_veiculo_thumbnail')->entity->uri->value);
     
     $features_machine_name = $this->getMachineNames('node', 'veiculo');
     
@@ -80,7 +86,8 @@ class FeaturesService
       'version' => $version,
       'price' => $price,
       'thumbnail'=> $thumbnail,
-      'features' => $features
+      'colors' => $this->dataColors[$modelo][$version]['colors'],
+      'features' => $features,
     );
   }
 }

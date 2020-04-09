@@ -21,10 +21,12 @@ class WsCompleteAPIController extends ControllerBase
   public function call(Request $request)
   {
     $modelos = new ModelosService();
-    $models = $modelos->sendRequest();
+    $responseModelos = $modelos->sendRequest();
     
     $features = new FeaturesService();
-    $result = array_merge_recursive($models,$features->sendRequest());
+    $responseFeatures = $features->sendRequest();
+
+    $result = array_merge_recursive($responseModelos, $responseFeatures);
 
     return new JsonResponse($result);
   }
