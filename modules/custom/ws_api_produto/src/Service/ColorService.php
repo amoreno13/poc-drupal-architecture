@@ -12,6 +12,7 @@ class ColorService
   
   private $result;
   private $array_machine_names;
+  private $features_machine_name;
 
   public function sendRequest()
   {
@@ -19,18 +20,18 @@ class ColorService
       'field_colors_veiculo', //content type veiculo
       'field_colors_weight', 
       'field_colors_showcase_image',
-      'field_colors_preco_adicional', //content type precos
+      'field_colors_adicional_cor',
+      'field_colors_cor', //taxonomy -> Cor
       'field_colors_legal',
       'field_veiculo_modelo', //taxonomy -> Modelo
       'field_veiculo_preco_base', 
       'field_veiculo_versao',//taxonomy -> Versão
-      'field_precos_cor', //taxonomy -> Cor
-      'field_precos_modelo', //taxonomy -> Modelo
-      'field_precos_valor_adicional_cor',
       'field_cor_hex'
     );
-    
+
+    $this->features_machine_name = $this->getMachineNames('colors','node'); 
     $nodes_colors  = $this->getNodes('colors');
+
     foreach ($nodes_colors as $entity) { 
       $features[] = $this->getFeatures($entity);
     }
@@ -50,35 +51,34 @@ class ColorService
   }
 
   public function getFeatures($entity){
-    $features_machine_name = $this->getMachineNames('colors'); 
-    foreach($features_machine_name as $machine_name => $type){ 
+    foreach($this->features_machine_name as $machine_name => $type){ 
       if($type == 'node'){
         $tid = $entity->get($machine_name)->getString();
         $node = \Drupal\node\Entity\Node::load($tid);
-        $node_machine_names = $this->getMachineNames($node->getType());
+        $node_machine_names = $this->getMachineNames($node->getType(), 'node');
         foreach($node_machine_names as $node_machine_name => $node_type){
-          if($node_type == 'taxonomy_term'){
-            if($node_machine_name == 'field_precos_cor') {
-              $data['field_cor_hex'] = $node->get($node_machine_name)->first()->get('entity')->getTarget()->getValue()->get('field_cor_hex')->getString();
-            }
+          if($node_type == 'taxonomy_term')
             $data[$node_machine_name] = $node->get($node_machine_name)->first()->get('entity')->getTarget()->getValue()->label();
-          }
-          else{
+          else
             $data[$node_machine_name] = $node->get($node_machine_name)->first()->getString();
-          }
         }
+      }
+      else if($type == 'taxonomy_term'){
+        $tid = $entity->get($machine_name)->getString();
+        $term = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->load($tid);
+        $data[$machine_name] = $term->getName();
+        $data['field_cor_hex'] = $term->get('field_cor_hex')->getString();
       }
       else {
         $data[$machine_name] = $entity->get($machine_name)->getString();
       }
     }
-    
     return $data;
   }
 
-  public function getMachineNames($term){
+  public function getMachineNames($term, $element_type){
     $fields = array_filter(
-      \Drupal::service('entity_field.manager')->getFieldDefinitions('node', $term),
+      \Drupal::service('entity_field.manager')->getFieldDefinitions($element_type, $term),
       function ($fieldDefinition) {
         return $fieldDefinition instanceof \Drupal\field\FieldConfigInterface;
       }
@@ -93,20 +93,18 @@ class ColorService
   
   function setFeatures($features){
     foreach($features as $key => $array_features){
-      if($array_features['field_veiculo_modelo'] == $array_features['field_precos_modelo']){
-        $modelo = str_replace('-','',strtolower($array_features['field_veiculo_modelo']));
-        $cor_machine_name = $this->RemoveSpecialChar($array_features['field_precos_cor']);
-        $color_name = str_replace(' ','_',strtolower($cor_machine_name));
-        $this->result[$modelo][$array_features['field_veiculo_versao']]['colors'][] = array(
-          'name' => $array_features['field_precos_cor'],
-          'machine_name' => $color_name,
-          'showcase_image' => $array_features['field_colors_showcase_image'],
-          'hex' => $array_features['field_cor_hex'],
-          'weight' => $array_features['field_colors_weight'],
-          'price_full' => $array_features['field_colors_preco_adicional'] + $array_features['field_veiculo_preco_base'],
-          'legal'=> $array_features['field_colors_legal']
-        );
-      }
+      $modelo = str_replace('-','',strtolower($array_features['field_veiculo_modelo']));
+      $cor_machine_name = $this->RemoveSpecialChar($array_features['field_colors_cor']);
+      $color_name = str_replace(' ','_',strtolower($cor_machine_name));
+      $this->result[$modelo][$array_features['field_veiculo_versao']]['colors'][] = array(
+        'name' => $array_features['field_colors_cor'],
+        'machine_name' => $color_name,
+        'showcase_image' => $array_features['field_colors_showcase_image'],
+        'hex' => $array_features['field_cor_hex'],
+        'weight' => $array_features['field_colors_weight'],
+        'price_full' => $array_features['field_colors_adicional_cor'] + $array_features['field_veiculo_preco_base'],
+        'legal'=> $array_features['field_colors_legal']
+      );
     }    
   }
 
@@ -119,5 +117,4 @@ class ColorService
       'ö'=>'o', 'ø'=>'o', 'ù'=>'u', 'ú'=>'u', 'û'=>'u', 'ý'=>'y', 'þ'=>'b', 'ÿ'=>'y' );
     return strtr( $string, $unwanted_array );
   }
-  
 }
