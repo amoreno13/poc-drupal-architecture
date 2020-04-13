@@ -81,7 +81,7 @@ class ImportForm extends FormBase
     
     $file = \Drupal::service('file_system')->realpath($form_state->getValue('file_uploaded'));
     
-    $return = $spreadsheetHelper->readFile($file);
+    $return = $spreadsheetHelper->readFile($file,true);
     $batch = array(
       'title'            => t('Update...'),
       'operations'       => [],

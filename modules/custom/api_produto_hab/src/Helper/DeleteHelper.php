@@ -36,9 +36,6 @@ class DeleteHelper
   private function getEntities() {
     return [
       ['type' => 'node', 'id' => 'type', 'name' => 'veiculo'],
-      ['type' => 'node', 'id' => 'type', 'name' => 'versoes'],
-      ['type' => 'taxonomy_term', 'id' => 'vid', 'name' => 'field_veiculo_modelo'],
-      ['type' => 'taxonomy_term', 'id' => 'vid', 'name' => 'field_veiculo_versao'],
     ];
   }
 
@@ -71,7 +68,6 @@ class DeleteHelper
   }
 
   private function setBatchOperation($entityType, $ids, &$batch) { 
-
     $batch['operations'][] = ['\Drupal\api_produto_hab\Helper\BatchHelper::handleDelete', [$ids, $entityType]];
   }
 }
