@@ -26,8 +26,13 @@ class SpreadsheetHelper
     $reader = IOFactory::createReader($inputFileType);
     $spreadsheet = $reader->load($inputFileName);
     $rows = $spreadsheet->getActiveSheet()->toArray(null, true, true, false);
-    // unset($rows[0]); // Remove the header
+    
+    $return['header'] = $rows[0];
 
-    return $rows;
+    unset($rows[0]);
+
+    $return['rows'] = array_filter($rows);    
+
+    return $return;
   }
 }

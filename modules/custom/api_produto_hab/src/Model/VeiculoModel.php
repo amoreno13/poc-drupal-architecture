@@ -16,15 +16,17 @@ class VeiculoModel
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function createNode($row, $first_row)
+  public function createNode($row, $header)
   {
     $taxonomyModel = new TaxonomyModel();
 
+    //$motor_transm_cons[] = $this->getFeatures($header, $row, 3, 10);
+
     for($i=3; $i<=50; $i++){
-      if($i<=10)            $motor_transm_cons[] = array('first' => $first_row[$i], 'second' => $row[$i]);
-      if($i>10 && $i<=17)   $dimensoes[] = array('first' => $first_row[$i], 'second' => $row[$i]);
-      if($i>17 && $i<=42)   $tracao_direcao_seg[] = array('first' => $first_row[$i], 'second' => $row[$i]);
-      if($i>42)             $interno[] = array('first' => $first_row[$i], 'second' => $row[$i]);
+      if($i<=10)            $motor_transm_cons[] = array('first' => $header[$i], 'second' => $row[$i]);
+      if($i>10 && $i<=17)   $dimensoes[] = array('first' => $header[$i], 'second' => $row[$i]);
+      if($i>17 && $i<=42)   $tracao_direcao_seg[] = array('first' => $header[$i], 'second' => $row[$i]);
+      if($i>42)             $interno[] = array('first' => $header[$i], 'second' => $row[$i]);
     }
 
     $veiculoData = [
@@ -59,5 +61,11 @@ class VeiculoModel
     return array_filter(
             explode(',', $items)
           );
+  }
+
+  private function getFeatures($header, $row, $startRow, $endRow) {
+
+    $blaRow = array_slice($row, $startRow, $endRow - $startRow);
+    $blaHeader = array_slice($header, $startRow, $endRow - $startRow);
   }
 }

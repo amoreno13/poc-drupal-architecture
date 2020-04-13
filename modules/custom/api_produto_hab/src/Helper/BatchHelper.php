@@ -20,16 +20,16 @@ class BatchHelper
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public static function handle($row, $first_row, $type, &$context)
+  public static function handle($row, $first_row, &$context)
   {
-    if($type == 'veiculo'){
+    //if($type == 'veiculo'){
       $veiculoModel = new VeiculoModel();
       $veiculoModel->createNode($row,$first_row);
-    }
+    /*}
     else{
       $colorsModel = new ColorsModel();
       $colorsModel->createNode($row,$first_row);
-    }
+    }*/
     $context['results'][] = $row;
   }
 

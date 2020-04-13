@@ -81,7 +81,7 @@ class ImportForm extends FormBase
     
     $file = \Drupal::service('file_system')->realpath($form_state->getValue('file_uploaded'));
     
-    $rows = $spreadsheetHelper->readFile($file);
+    $return = $spreadsheetHelper->readFile($file);
     $batch = array(
       'title'            => t('Update...'),
       'operations'       => [],
@@ -91,10 +91,8 @@ class ImportForm extends FormBase
       'finished'         => '\Drupal\api_produto_hab\Helper\BatchHelper::handleFinishedCallback',
     );
     
-    $first_row = $rows[0];
-    unset($rows[0]);
-    foreach ($rows as $key => $row) {
-      $batch['operations'][] = ['\Drupal\api_produto_hab\Helper\BatchHelper::handle', [$row, $first_row]];
+    foreach ($return['rows'] as $key => $row) {
+      $batch['operations'][] = ['\Drupal\api_produto_hab\Helper\BatchHelper::handle', [$row, $return['header']]];
     }
 
     (new DeleteHelper())->cleanHistory();
