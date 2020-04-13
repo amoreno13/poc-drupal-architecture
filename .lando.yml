@@ -2,4 +2,9 @@ name: poc-drupal-architecture
 recipe: drupal8
 config:
   webroot: .
-  database: mysql
+  database: mysql:5.7.28
+services:
+  appserver:
+    xdebug: true
+    config:
+      php:.vscode/php.ini
