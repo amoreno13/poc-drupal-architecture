@@ -21,7 +21,8 @@
         "drupal/core-recommended": "^8.8",
         "drupal/core-vendor-hardening": "^8.8",
         "drupal/double_field": "^3.4",
-        "drupal/field_group": "^3.0"
+        "drupal/field_group": "^3.0",
+        "phpoffice/phpspreadsheet": "^1.9"
     },
     "require-dev": {
     },

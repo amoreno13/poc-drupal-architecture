@@ -1,0 +1,20 @@
+api_produto_hab:
+  path: '/admin/config/customer-service-revisions'
+  defaults:
+    _controller: '\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage'
+    _title: 'API Produto HAB'
+  requirements:
+    _permission: 'access administration pages'
+  options:
+    _admin_route: TRUE
+
+api_produto_hab.import_form:
+  path: '/admin/config/api_produto_hab/form/import'
+  defaults:
+    _form: '\Drupal\api_produto_hab\Form\ImportForm'
+    _title: 'Import Form'
+  requirements:
+    _permission: 'access administration pages'
+  options:
+    _admin_route: TRUE
+

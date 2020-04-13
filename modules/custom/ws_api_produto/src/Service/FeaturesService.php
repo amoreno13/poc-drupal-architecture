@@ -67,8 +67,8 @@ class FeaturesService
 
   public function setFeatures($entity, $model, $version){
     $modelo         = str_replace('-','',strtolower($model));
-    $price          = $entity->get('field_veiculo_preco_base')->getString();
-    $thumbnail      = file_create_url($entity->get('field_veiculo_thumbnail')->entity->uri->value);
+    // $price          = $entity->get('field_veiculo_preco_base')->getString();
+    // $thumbnail      = file_create_url($entity->get('field_veiculo_thumbnail')->entity->uri->value);
     
     $features_machine_name = $this->getMachineNames('node', 'veiculo');
     
@@ -84,8 +84,6 @@ class FeaturesService
 
     $this->result[$modelo]['version_features'][] = array (
       'version' => $version,
-      'price' => $price,
-      'thumbnail'=> $thumbnail,
       'colors' => $this->dataColors[$modelo][$version]['colors'],
       'features' => $features,
     );

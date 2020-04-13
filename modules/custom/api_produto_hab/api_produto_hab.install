@@ -1,0 +1,18 @@
+<?php
+/**
+ * Implements hook_install().
+ */
+function api_produto_hab_install()
+{
+  $path = 'public://api_produto_hab/';
+  file_prepare_directory($path, FILE_CREATE_DIRECTORY);
+
+}
+
+/**
+ * Implements hook uninstall().
+ */
+function api_produto_hab_uninstall()
+{
+  file_unmanaged_delete_recursive('public://api_produto_hab/');
+}

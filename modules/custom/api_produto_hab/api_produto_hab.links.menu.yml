@@ -1,0 +1,11 @@
+api_produto_hab:
+  title: 'API Produto HAB'
+  route_name: api_produto_hab
+  description: ''
+  parent: system.admin_config
+
+api_produto_hab.import_form:
+  title: 'Import Form'
+  route_name: api_produto_hab.import_form
+  description: ''
+  parent: api_produto_hab

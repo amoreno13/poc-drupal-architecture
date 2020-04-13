@@ -1,0 +1,6 @@
+name: API Produto HAB
+description: API Produto HAB
+type: module
+core: 8.x
+package: Custom
+configure: api_produto_hab.import_form
