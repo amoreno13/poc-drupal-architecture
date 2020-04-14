@@ -23,12 +23,12 @@ class ColorsModel
 
     $colorsData = [
       'type'                              => 'colors',
-      'title'                             => t('@veiculo @color', ['@veiculo' => $row[0], '@color' => $row[1]]),
-      'field_colors_veiculo'              => $contentModel->getTidByNameAndVid($row[0], 'veiculo'),
-      'field_colors_cor'                  => $taxonomyModel->getTidByNameAndVid($row[1], 'cor'),
-      'field_colors_adicional_cor'        => $row[2],
-      'field_colors_weight'               => $row[3],
-      'field_colors_legal'                => $row[4],
+      'title'                             => t('@model @version @color', ['@model' => $row[0], '@version' => $row[1], '@color' => $row[2]]),
+      'field_colors_veiculo'              => $contentModel->getTidByNameAndVid($row[0].' '.$row[1], 'veiculo'),
+      'field_colors_cor'                  => $taxonomyModel->getTidByNameAndVid($row[2], 'cor'),
+      'field_colors_adicional_cor'        => $row[3],
+      'field_colors_weight'               => $row[4],
+      'field_colors_legal'                => $row[5],
     ];
 
     $revision = Node::create($colorsData);

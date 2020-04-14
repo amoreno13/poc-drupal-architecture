@@ -29,7 +29,9 @@ class SpreadsheetHelper
     
     if($hasHeader)  $return['header'] = $rows[0];
     unset($rows[0]);
-    $return['rows'] = array_filter(array_map('array_filter', $rows));
+    $return['rows'] = array_filter($rows, function($item){
+      return $item[0] !== null;
+    });
 
     return $return;
   }

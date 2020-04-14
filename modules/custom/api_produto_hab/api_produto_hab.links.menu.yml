@@ -1,11 +1,17 @@
 api_produto_hab:
-  title: 'API Produto HAB'
+  title: 'Importador API HAB'
   route_name: api_produto_hab
   description: ''
   parent: system.admin_config
 
-api_produto_hab.import_form:
-  title: 'Import Form'
-  route_name: api_produto_hab.import_form
+api_produto_hab.import_form_veiculo:
+  title: 'Import Form Veiculo'
+  route_name: api_produto_hab.import_form_veiculo
+  description: ''
+  parent: api_produto_hab
+
+api_produto_hab.import_form_colors:
+  title: 'Import Form Colors'
+  route_name: api_produto_hab.import_form_colors
   description: ''
   parent: api_produto_hab

@@ -10,9 +10,9 @@ class DeleteHelper
     $this->pageSize = 1000;
   }
 
-  public function cleanHistory() {
+  public function cleanHistory($machine_name) {
 
-    $entities = $this->getEntities();
+    $entities = $this->getEntities($machine_name);
 
     $batch = $this->getBatchDelete();
 
@@ -33,15 +33,15 @@ class DeleteHelper
     $storageHandler->delete($entities);
   }
 
-  private function getEntities() {
+  private function getEntities($machine_name) {
     return [
-      ['type' => 'node', 'id' => 'type', 'name' => 'veiculo'],
+      ['type' => 'node', 'id' => 'type', 'name' => $machine_name],
     ];
   }
 
   private function getBatchDelete() {
     return [      
-      'title'            => t('Update Revisions...'),
+      'title'            => t('Update...'),
       'operations'       => [],
       'init_message'     => t('Commencing...'),
       'progress_message' => t('Processed @current out of @total.'),

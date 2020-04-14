@@ -8,18 +8,18 @@ use Drupal\api_produto_hab\Helper\SpreadsheetHelper;
 use Drupal\api_produto_hab\Helper\DeleteHelper;
 
 /**
- * Class ImportForm.
+ * Class ImportFormVeiculo.
  *
  * @package Drupal\api_produto_hab\Form
  */
-class ImportForm extends FormBase
+class ImportFormVeiculo extends FormBase
 {
   /**
    * {@inheritdoc}
    */
   public function getFormId()
   {
-    return 'import_form';
+    return 'import_form_veiculo';
   }
 
   /**
@@ -92,10 +92,10 @@ class ImportForm extends FormBase
     );
     
     foreach ($return['rows'] as $key => $row) {
-      $batch['operations'][] = ['\Drupal\api_produto_hab\Helper\BatchHelper::handle', [$row, $return['header']]];
+      $batch['operations'][] = ['\Drupal\api_produto_hab\Helper\BatchHelper::handle', ['veiculo',$row, $return['header']]];
     }
 
-    (new DeleteHelper())->cleanHistory();
+    (new DeleteHelper())->cleanHistory('veiculo');
     batch_set($batch);
   }
 }

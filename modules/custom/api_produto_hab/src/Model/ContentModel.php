@@ -30,17 +30,22 @@ class ContentModel
     $properties['name'] = $name;
 
     // Load term
-    $terms = \Drupal::entityManager()->getStorage('node')->loadByProperties($properties);
-    $term = reset($terms);
+    $nid = \Drupal::entityQuery('node')
+      ->condition('title', $name)
+      ->condition('type', $vid)
+      ->execute();
 
-    if (!empty($term)) {
-      return $term->id();
+    if (!empty($nid)) {
+      return $nid;
     } else {
-      $_term = Term::create(['vid' => $vid, 'name' => $name]);
-      $_term->save();
-      $id = $_term->id();
+      $node = Node::create([
+        'type'        => $vid,
+        'title'       => $name,
+      ]);
+      $node->save();
+      $nid = $node->id();
 
-      return $id;
+      return $nid;
     }
   }
 }

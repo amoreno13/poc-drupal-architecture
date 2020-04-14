@@ -20,14 +20,10 @@ class VeiculoModel
   {
     $taxonomyModel = new TaxonomyModel();
 
-    //$motor_transm_cons[] = $this->getFeatures($header, $row, 3, 10);
-
-    for($i=3; $i<=50; $i++){
-      if($i<=10)            $motor_transm_cons[] = array('first' => $header[$i], 'second' => $row[$i]);
-      if($i>10 && $i<=17)   $dimensoes[] = array('first' => $header[$i], 'second' => $row[$i]);
-      if($i>17 && $i<=42)   $tracao_direcao_seg[] = array('first' => $header[$i], 'second' => $row[$i]);
-      if($i>42)             $interno[] = array('first' => $header[$i], 'second' => $row[$i]);
-    }
+    $motor_transm_cons  = $this->getFeatures($header, $row, 3, 8);
+    $dimensoes          = $this->getFeatures($header, $row, 11, 7);
+    $tracao_direcao_seg = $this->getFeatures($header, $row, 18, 25);
+    $interno            = $this->getFeatures($header, $row, 43, 8);
 
     $veiculoData = [
       'type'                              => 'veiculo',
@@ -63,9 +59,11 @@ class VeiculoModel
           );
   }
 
-  private function getFeatures($header, $row, $startRow, $endRow) {
-
-    $blaRow = array_slice($row, $startRow, $endRow - $startRow);
-    $blaHeader = array_slice($header, $startRow, $endRow - $startRow);
+  private function getFeatures($header, $row, $startRow, $length) {
+    $Feature  = array_slice($header, $startRow, $length);
+    $Value    = array_slice($row, $startRow, $length);
+    foreach(array_combine($Feature, $Value) as $feature => $value)
+      $array[] = array('first' => $feature, 'second' => $value);
+    return $array;
   }
 }
