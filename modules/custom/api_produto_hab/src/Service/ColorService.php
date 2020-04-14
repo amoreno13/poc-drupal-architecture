@@ -93,7 +93,7 @@ class ColorService
   
   function setFeatures($features){
     foreach($features as $key => $array_features){
-      $modelo = str_replace('-','',strtolower($array_features['field_veiculo_modelo']));
+      $modelo = str_replace(' ','',str_replace('-','',strtolower($array_features['field_veiculo_modelo'])));
       $cor_machine_name = $this->RemoveSpecialChar($array_features['field_colors_cor']);
       $color_name = str_replace(' ','_',strtolower($cor_machine_name));
       $this->result[$modelo][$array_features['field_veiculo_versao']]['colors'][] = array(
