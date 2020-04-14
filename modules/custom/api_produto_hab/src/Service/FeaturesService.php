@@ -66,9 +66,7 @@ class FeaturesService
   }
 
   public function setFeatures($entity, $model, $version){
-    $modelo         = str_replace(' ','',str_replace('-','',strtolower($model)));
-    // $price          = $entity->get('field_veiculo_preco_base')->getString();
-    // $thumbnail      = file_create_url($entity->get('field_veiculo_thumbnail')->entity->uri->value);
+    $modelo = preg_replace('/[^A-Za-z]/', '', strtolower($model));
     
     $features_machine_name = $this->getMachineNames('node', 'veiculo');
     

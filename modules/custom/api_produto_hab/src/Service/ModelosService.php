@@ -31,7 +31,7 @@ class ModelosService
   public function setModelInfo($models){
     $machine_names = $this->getMachineNames('modelo', 'field_modelo_');
     foreach($models as $tid => $name){ //passa por cada modelo da taxonomia
-      $modelo = str_replace(' ','',str_replace('-','',strtolower($name)));
+      $modelo = preg_replace('/[^A-Za-z]/', '', strtolower($name));
       foreach($machine_names as $type => $names){ //passa por cada tipo de elemento 
         foreach($names as $key => $machine_name){ //separa o nome da chave e o machine_name
           $term = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->load($tid);
