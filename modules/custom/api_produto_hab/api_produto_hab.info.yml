@@ -1,5 +1,5 @@
-name: Importador API HAB
-description: Importador API HAB
+name: API Produto HAB
+description: Módulo da API dos produtos de HAB
 type: module
 core: 8.x
 package: Custom

@@ -1,5 +1,5 @@
 api_produto_hab:
-  title: 'Importador API HAB'
+  title: 'API Produto HAB'
   route_name: api_produto_hab
   description: ''
   parent: system.admin_config

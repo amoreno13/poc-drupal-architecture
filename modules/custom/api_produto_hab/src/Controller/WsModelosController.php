@@ -7,12 +7,12 @@
  * Time: 21:00 h
  */
 
-namespace Drupal\ws_api_produto\Controller;
+namespace Drupal\api_produto_hab\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Drupal\ws_api_produto\Service\ModelosService;
+use Drupal\api_produto_hab\Service\ModelosService;
 
 class WsModelosController extends ControllerBase
 {

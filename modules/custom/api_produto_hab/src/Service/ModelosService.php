@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\ws_api_produto\Service;
+namespace Drupal\api_produto_hab\Service;
 
 use Drupal\taxonomy\Entity\Term;
 use Symfony\Component\HttpFoundation\Request;
