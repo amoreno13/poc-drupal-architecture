@@ -39,6 +39,9 @@ class VeiculoModel
 
     $revision = Node::create($veiculoData);
     $revision->save();
+
+    $this->updateReference($revision->id(),$row[0].' '.$row[1]);
+
   }
   /**
    * @param array $row
@@ -65,5 +68,16 @@ class VeiculoModel
     foreach(array_combine($Feature, $Value) as $feature => $value)
       $array[] = array('first' => $feature, 'second' => $value);
     return $array;
+  }
+
+  private function updateReference($new_id, $title){
+    $nids = \Drupal::entityQuery('node')->condition('type','colors')->condition('type','colors')->execute();
+    foreach ($nids as $nid) {
+      $node = \Drupal\node\Entity\Node::load($nid);
+      if(strpos($node->title->value, $title) !== false){
+        $node->field_colors_veiculo->target_id = $new_id;
+        $node->save();
+      }
+    }
   }
 }
