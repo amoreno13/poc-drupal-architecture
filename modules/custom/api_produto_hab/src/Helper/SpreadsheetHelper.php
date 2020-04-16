@@ -18,7 +18,7 @@ class SpreadsheetHelper
    * @throws \PhpOffice\PhpSpreadsheet\Exception
    * @throws \PhpOffice\PhpSpreadsheet\Reader\Exception
    */
-  public function readFile($file, $hasHeader)
+  public function readFile($file)
   {
     // Load file
     $inputFileType = ucfirst(pathinfo($file)['extension']);
@@ -27,7 +27,7 @@ class SpreadsheetHelper
     $spreadsheet = $reader->load($inputFileName);
     $rows = $spreadsheet->getActiveSheet()->toArray(null, true, true, false);
     
-    if($hasHeader)  $return['header'] = $rows[0];
+    $return['header'] = $rows[0];
     unset($rows[0]);
     $return['rows'] = array_filter($rows, function($item){
       return $item[0] !== null;

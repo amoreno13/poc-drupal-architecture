@@ -16,10 +16,12 @@ class ColorsModel
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function createNode($row, $first_row)
+  public function createNode($row, $header)
   {
     $taxonomyModel  = new TaxonomyModel();
     $contentModel   = new ContentModel();
+
+    $precos_especiais = $this->getPrecos($header,$row, 7);
 
     $colorsData = [
       'type'                              => 'colors',
@@ -29,6 +31,7 @@ class ColorsModel
       'field_colors_adicional_cor'        => $row[3],
       'field_colors_weight'               => $row[4],
       'field_colors_legal'                => $row[5],
+      'field_colors_precos_especiais'     => $precos_especiais,
     ];
 
     $revision = Node::create($colorsData);
@@ -51,5 +54,14 @@ class ColorsModel
     return array_filter(
             explode(',', $items)
           );
+  }
+
+  private function getPrecos($header, $row, $startRow) {
+    $i = $startRow;
+    while($header[$i] !== null && $header[$i] !== ''){
+      $array[] = array('first' => $header[$i], 'second' => $row[$i]);
+      $i++;
+    }
+    return $array;
   }
 }

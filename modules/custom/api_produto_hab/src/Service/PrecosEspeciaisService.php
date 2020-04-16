@@ -7,12 +7,12 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
 
-class ColorService
+class PrecosEspeciaisService
 {
   
   private $result;
   private $array_machine_names;
-  private $colors_machine_name;
+  private $precos_machine_name;
 
   public function sendRequest()
   {
@@ -23,35 +23,37 @@ class ColorService
       'field_colors_adicional_cor',
       'field_colors_cor', //taxonomy -> Cor
       'field_colors_legal',
+      'field_colors_precos_especiais',
       'field_veiculo_modelo', //taxonomy -> Modelo
       'field_veiculo_preco_base', 
       'field_veiculo_versao',//taxonomy -> Versão
+      'field_veiculo_highlights',
+      'field_veiculo_weight',
       'field_cor_hex'
     );
 
-    $this->colors_machine_name = $this->getMachineNames('colors','node'); 
-    $nodes_colors  = $this->getNodes('colors');
-
-    foreach ($nodes_colors as $entity) { 
-      $colors[] = $this->getColors($entity);
-    }
+    $this->precos_machine_name = $this->getMachineNames('colors','node'); 
+    $nodes_precos  = $this->getNodes('colors');
     
-    $this->setColors($colors);
+    foreach ($nodes_precos as $entity) {
+      $precos[] = $this->getPrecos($entity);
+    }
+
+    $this->setPrecos($precos);
 
     return $this->result;
   }
 
-  public function getNodes($content_type){ 
+  private function getNodes($content_type){ 
     $query = \Drupal::entityQuery('node')
     ->condition('status', 1)
     ->condition('type', $content_type)
     ->execute();
-
     return \Drupal\node\Entity\Node::loadMultiple($query);
   }
 
-  public function getColors($entity){
-    foreach($this->colors_machine_name as $machine_name => $type){ 
+  private function getPrecos($entity){
+    foreach($this->precos_machine_name as $machine_name => $type){
       if($type == 'node'){
         $tid = $entity->get($machine_name)->getString();
         $node = \Drupal\node\Entity\Node::load($tid);
@@ -59,6 +61,11 @@ class ColorService
         foreach($node_machine_names as $node_machine_name => $node_type){
           if($node_type == 'taxonomy_term')
             $data[$node_machine_name] = $node->get($node_machine_name)->first()->get('entity')->getTarget()->getValue()->label();
+          else if($node_machine_name == 'field_veiculo_highlights'){
+            foreach($node->get($node_machine_name)->getValue() as $key => $highlights){
+              $data[$node_machine_name][] = $highlights['value'];
+            }
+          }
           else
             $data[$node_machine_name] = $node->get($node_machine_name)->first()->getString();
         }
@@ -69,6 +76,11 @@ class ColorService
         $data[$machine_name] = $term->getName();
         $data['field_cor_hex'] = $term->get('field_cor_hex')->getString();
       }
+      else if($type == 'double_field'){
+        foreach($entity->get($machine_name)->getValue() as $key => $values){
+          $data[$values['first']] = $values['second'] ? $values['second'] : '';
+        }
+      }
       else {
         $data[$machine_name] = $entity->get($machine_name)->getString();
       }
@@ -76,7 +88,7 @@ class ColorService
     return $data;
   }
 
-  public function getMachineNames($term, $element_type){
+  private function getMachineNames($term, $element_type){
     $fields = array_filter(
       \Drupal::service('entity_field.manager')->getFieldDefinitions($element_type, $term),
       function ($fieldDefinition) {
@@ -91,24 +103,55 @@ class ColorService
     return $names;
   }
   
-  function setColors($colors){
-    foreach($colors as $key => $array_colors){
-      $modelo = preg_replace('/[^A-Za-z]/', '', strtolower($array_colors['field_veiculo_modelo']));
-      $cor_machine_name = $this->RemoveSpecialChar($array_colors['field_colors_cor']);
-      $color_name = str_replace(' ','_',strtolower($cor_machine_name));
-      $this->result[$modelo][$array_colors['field_veiculo_versao']]['colors'][] = array(
-        'name' => $array_colors['field_colors_cor'],
-        'machine_name' => $color_name,
-        'showcase_image' => $array_colors['field_colors_showcase_image'],
-        'hex' => $array_colors['field_cor_hex'],
-        'weight' => $array_colors['field_colors_weight'],
-        'price_full' => $array_colors['field_colors_adicional_cor'] + $array_colors['field_veiculo_preco_base'],
-        'legal'=> $array_colors['field_colors_legal']
+  private function setPrecos($precos){
+    foreach($precos as $key => $array_data){
+      $modelo = $array_data['field_veiculo_modelo'];
+      $modelo_raw = preg_replace('/[^A-Za-z]/', '', strtolower($modelo));
+      $versao = $array_data['field_veiculo_versao'];
+      $versao_raw = preg_replace('/[^A-Za-z]/', '', strtolower($versao));
+      $cor_machine_name = str_replace(' ','_',strtolower($array_data['field_colors_cor']));
+      
+      $array_colors = array(
+        'name' => $array_data['field_colors_cor'],
+        'machine_name' => $this->RemoveSpecialChar($cor_machine_name),
+        'showcase_image' => $array_data['field_colors_showcase_image'],
+        'hex' => $array_data['field_cor_hex'],
+        'weight' => $array_data['field_colors_weight'],
+        'price_full' => $array_data['field_veiculo_preco_base'] + $array_data['field_colors_adicional_cor'],
+        'legal' => $array_data['field_colors_legal'],
       );
-    }    
+
+      foreach ($array_data as $machine_name => $value){
+        if(strpos($machine_name, 'price_discount') !== false){
+          $array_colors[$machine_name] = $value;
+        }
+      }
+
+      $colors[$modelo_raw]['versions'][$versao_raw]['colors'][] = $array_colors;
+
+      $versions[$modelo_raw]['versions'][$versao_raw] = array(
+        'name' => $versao,
+        'machine_name' => $versao_raw,
+        'marketing_name' => 'Honda ' . $modelo . ' '. $versao,
+        'weight' => $array_data['field_veiculo_weight'],
+        'highlights' => $array_data['field_veiculo_highlights'],
+        'lead_form_url' => 'https://www.honda.com.br/automoveis/tenho-interesse',
+        'lead_model_info' => $modelo . ' - ' . $versao,
+      );
+    }
+
+    $data = array_merge_recursive($versions, $colors);
+
+    foreach($data as $modelo => $versions){
+      foreach ($versions as $version => $data){
+        $result[$modelo]['versions'] = array_values($data);
+      }
+    }
+    
+    $this->result = $result;
   }
 
-  function RemoveSpecialChar($string){
+  private function RemoveSpecialChar($string){
     $unwanted_array = array(    
       'Š'=>'S', 'š'=>'s', 'Ž'=>'Z', 'ž'=>'z', 'À'=>'A', 'Á'=>'A', 'Â'=>'A', 'Ã'=>'A', 'Ä'=>'A', 'Å'=>'A', 'Æ'=>'A', 'Ç'=>'C', 'È'=>'E', 'É'=>'E',
       'Ê'=>'E', 'Ë'=>'E', 'Ì'=>'I', 'Í'=>'I', 'Î'=>'I', 'Ï'=>'I', 'Ñ'=>'N', 'Ò'=>'O', 'Ó'=>'O', 'Ô'=>'O', 'Õ'=>'O', 'Ö'=>'O', 'Ø'=>'O', 'Ù'=>'U',

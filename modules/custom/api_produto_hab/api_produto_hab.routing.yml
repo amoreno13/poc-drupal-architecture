@@ -28,6 +28,14 @@ api_produto_hab.import_form_colors:
   options:
     _admin_route: TRUE
 
+ws_produto:
+  path: '/produto/api/consulta/completo'
+  defaults:
+    _controller: 'Drupal\api_produto_hab\Controller\WsCompleteAPIController::call'
+  methods:  [GET]
+  requirements:
+    _permission: 'access content'
+
 ws_produto_modelos:
   path: '/produto/api/consulta/modelos'
   defaults:
@@ -35,10 +43,11 @@ ws_produto_modelos:
   methods:  [GET]
   requirements:
     _permission: 'access content'
-ws_produto:
-  path: '/produto/api/consulta/completo'
+
+ws_produto_precos_especiais:
+  path: '/produto/api/consulta/precos_especiais'
   defaults:
-    _controller: 'Drupal\api_produto_hab\Controller\WsCompleteAPIController::call'
+    _controller: 'Drupal\api_produto_hab\Controller\WsVendasEspeciaisController::call'
   methods:  [GET]
   requirements:
     _permission: 'access content'

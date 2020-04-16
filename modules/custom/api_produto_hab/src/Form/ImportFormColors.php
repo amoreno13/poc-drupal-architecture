@@ -81,7 +81,7 @@ class ImportFormColors extends FormBase
     
     $file = \Drupal::service('file_system')->realpath($form_state->getValue('file_uploaded'));
     
-    $return = $spreadsheetHelper->readFile($file,false);
+    $return = $spreadsheetHelper->readFile($file);
     $batch = array(
       'title'            => t('Update...'),
       'operations'       => [],
@@ -92,7 +92,7 @@ class ImportFormColors extends FormBase
     );
     
     foreach ($return['rows'] as $key => $row) {
-      $batch['operations'][] = ['\Drupal\api_produto_hab\Helper\BatchHelper::handle', ['colors',$row, false]];
+      $batch['operations'][] = ['\Drupal\api_produto_hab\Helper\BatchHelper::handle', ['colors',$row, $return['header']]];
     }
 
     (new DeleteHelper())->cleanHistory('colors');
