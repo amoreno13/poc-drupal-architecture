@@ -19,7 +19,7 @@ class ColorService
     $this->array_machine_names = array(
       'field_colors_veiculo', //content type veiculo
       'field_colors_weight', 
-      'field_colors_showcase_image',
+      'field_colors_thumbnail',
       'field_colors_adicional_cor',
       'field_colors_cor', //taxonomy -> Cor
       'field_colors_legal',
@@ -69,6 +69,10 @@ class ColorService
         $data[$machine_name] = $term->getName();
         $data['field_cor_hex'] = $term->get('field_cor_hex')->getString();
       }
+      else if($type == 'file'){
+        $image_uri = file_create_url($entity->get($machine_name)->entity->uri->value);
+        $data[$machine_name] = $image_uri;
+      }
       else {
         $data[$machine_name] = $entity->get($machine_name)->getString();
       }
@@ -99,10 +103,10 @@ class ColorService
       $this->result[$modelo][$array_colors['field_veiculo_versao']]['colors'][] = array(
         'name' => $array_colors['field_colors_cor'],
         'machine_name' => $color_name,
-        'showcase_image' => $array_colors['field_colors_showcase_image'],
+        'showcase_image' => $array_colors['field_colors_thumbnail'],
         'hex' => $array_colors['field_cor_hex'],
         'weight' => $array_colors['field_colors_weight'],
-        'price_full' => $array_colors['field_colors_adicional_cor'] + $array_colors['field_veiculo_preco_base'],
+        'price_full' => number_format($array_colors['field_veiculo_preco_base'] + $array_colors['field_colors_adicional_cor'],2,',','.'),
         'legal'=> $array_colors['field_colors_legal']
       );
     }    

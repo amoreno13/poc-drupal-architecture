@@ -81,6 +81,10 @@ class PrecosEspeciaisService
           $data[$values['first']] = $values['second'] ? $values['second'] : '';
         }
       }
+      else if($type == 'file'){
+        $image_uri = file_create_url($entity->get($machine_name)->entity->uri->value);
+        $data[$machine_name] = $image_uri;
+      }
       else {
         $data[$machine_name] = $entity->get($machine_name)->getString();
       }
@@ -117,13 +121,13 @@ class PrecosEspeciaisService
         'showcase_image' => $array_data['field_colors_showcase_image'],
         'hex' => $array_data['field_cor_hex'],
         'weight' => $array_data['field_colors_weight'],
-        'price_full' => $array_data['field_veiculo_preco_base'] + $array_data['field_colors_adicional_cor'],
+        'price_full' => number_format($array_data['field_veiculo_preco_base'] + $array_data['field_colors_adicional_cor'],2,',','.'),
         'legal' => $array_data['field_colors_legal'],
       );
 
       foreach ($array_data as $machine_name => $value){
         if(strpos($machine_name, 'price_discount') !== false){
-          $array_colors[$machine_name] = $value;
+          if($value)  $array_colors[$machine_name] = $value;
         }
       }
 

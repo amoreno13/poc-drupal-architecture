@@ -20,8 +20,9 @@ class ColorsModel
   {
     $taxonomyModel  = new TaxonomyModel();
     $contentModel   = new ContentModel();
+    $imageModel     = new ImageModel();
 
-    $precos_especiais = $this->getPrecos($header,$row, 7);
+    $precos_especiais = $this->getPrecos($header,$row, 8);
 
     $colorsData = [
       'type'                              => 'colors',
@@ -31,6 +32,8 @@ class ColorsModel
       'field_colors_adicional_cor'        => $row[3],
       'field_colors_weight'               => $row[4],
       'field_colors_legal'                => $row[5],
+      'field_colors_showcase_image'       => $imageModel->getImageByUri($row[6], $row[0].' '.$row[1]),
+      'field_colors_thumbnail'            => $imageModel->getImageByUri($row[7], $row[0].' '.$row[1]),
       'field_colors_precos_especiais'     => $precos_especiais,
     ];
 
