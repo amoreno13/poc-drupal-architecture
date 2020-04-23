@@ -11,100 +11,89 @@ class PrecosEspeciaisService
 {
   
   private $result;
-  private $array_machine_names;
-  private $precos_machine_name;
+  private $veiculo_machine_name;
+  private $colors_machine_name;
+  private $entities;
 
   public function sendRequest()
   {
-    $this->array_machine_names = array(
-      'field_colors_veiculo', //content type veiculo
-      'field_colors_weight', 
-      'field_colors_showcase_image',
-      'field_colors_adicional_cor',
-      'field_colors_cor', //taxonomy -> Cor
-      'field_colors_legal',
-      'field_colors_precos_especiais',
-      'field_veiculo_modelo', //taxonomy -> Modelo
-      'field_veiculo_preco_base', 
-      'field_veiculo_versao',//taxonomy -> Versão
-      'field_veiculo_highlights',
-      'field_veiculo_weight',
-      'field_cor_hex'
-    );
-
-    $this->precos_machine_name = $this->getMachineNames('colors','node'); 
-    $nodes_precos  = $this->getNodes('colors');
+    $this->entities = new EntitiesService;
+    $this->setColorsFields();
+    $this->setVeiculosFields();
     
-    foreach ($nodes_precos as $entity) {
+    foreach ($this->entities->getNodes('colors') as $entity) {
       $precos[] = $this->getPrecos($entity);
     }
-
+    
     $this->setPrecos($precos);
 
     return $this->result;
   }
 
-  private function getNodes($content_type){ 
-    $query = \Drupal::entityQuery('node')
-    ->condition('status', 1)
-    ->condition('type', $content_type)
-    ->execute();
-    return \Drupal\node\Entity\Node::loadMultiple($query);
+  private function setColorsFields(){
+    $this->colors_machine_name = array(
+      'field_colors_veiculo'          => 'node', //content type veiculo
+      'field_colors_weight'           => 'integer', 
+      'field_colors_showcase_image'   => 'file',
+      'field_colors_adicional_cor'    => 'decimal',
+      'field_colors_cor'              => 'taxonomy_term', //taxonomy -> Cor
+      'field_colors_legal'            => 'string',
+      'field_colors_precos_especiais' => 'double_field',
+    );
   }
+
+  private function setVeiculosFields(){
+    $this->veiculo_machine_name = array(
+      'field_veiculo_modelo'          => 'taxonomy_term', //taxonomy -> Modelo
+      'field_veiculo_preco_base'      => 'decimal', 
+      'field_veiculo_versao'          => 'taxonomy_term',//taxonomy -> Versão
+      'field_veiculo_highlights'      => 'string',
+      'field_veiculo_weight'          => 'integer',
+    );
+  }  
 
   private function getPrecos($entity){
-    foreach($this->precos_machine_name as $machine_name => $type){
-      if($type == 'node'){
-        $tid = $entity->get($machine_name)->getString();
-        $node = \Drupal\node\Entity\Node::load($tid);
-        $node_machine_names = $this->getMachineNames($node->getType(), 'node');
-        foreach($node_machine_names as $node_machine_name => $node_type){
-          if($node_type == 'taxonomy_term')
-            $data[$node_machine_name] = $node->get($node_machine_name)->first()->get('entity')->getTarget()->getValue()->label();
-          else if($node_machine_name == 'field_veiculo_highlights'){
-            foreach($node->get($node_machine_name)->getValue() as $key => $highlights){
-              $data[$node_machine_name][] = $highlights['value'];
+    foreach($this->colors_machine_name as $machine_name => $type){
+      switch ($type){
+        case 'node':
+          $node = $this->entities->loadNode($entity, $machine_name);
+          foreach($this->veiculo_machine_name as $node_machine_name => $node_type){
+            switch ($node_type){
+              case 'taxonomy_term':
+                $term = $this->entities->loadTaxonomyTerm($node, $node_machine_name);
+                $data[$node_machine_name] = $term['name'];
+              break;
+              default:
+                $value = $this->entities->getFieldValue($node, $node_machine_name);
+                if(is_array($value)) {
+                  foreach($value as $v){
+                    $data[$node_machine_name][] = $v;
+                  }
+                }
+                else  $data[$node_machine_name] = $value;
             }
           }
-          else
-            $data[$node_machine_name] = $node->get($node_machine_name)->first()->getString();
-        }
-      }
-      else if($type == 'taxonomy_term'){
-        $tid = $entity->get($machine_name)->getString();
-        $term = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->load($tid);
-        $data[$machine_name] = $term->getName();
-        $data['field_cor_hex'] = $term->get('field_cor_hex')->getString();
-      }
-      else if($type == 'double_field'){
-        foreach($entity->get($machine_name)->getValue() as $key => $values){
-          $data[$values['first']] = $values['second'] ? $values['second'] : '';
-        }
-      }
-      else if($type == 'file'){
-        $image_uri = file_create_url($entity->get($machine_name)->entity->uri->value);
-        $data[$machine_name] = $image_uri;
-      }
-      else {
-        $data[$machine_name] = $entity->get($machine_name)->getString();
+        break;
+        case 'taxonomy_term':
+          $term = $this->entities->loadTaxonomyTerm($entity, $machine_name);
+          $data[$machine_name]    = $term['name'];
+          $data['field_cor_hex']  = $this->entities->getFieldValue($term['term'], 'field_cor_hex');
+        break;
+        case 'double_field':
+          foreach($entity->get($machine_name)->getValue() as $key => $values){
+            $data[$values['first']] = $values['second'] ? $values['second'] : '';
+          }
+        break;
+        case 'file':
+          $image_uri = file_create_url($entity->get($machine_name)->entity->uri->value);
+          $data[$machine_name] = $image_uri;
+        break;
+        default:
+          $data[$machine_name] = $this->entities->getFieldValue($entity, $machine_name);
       }
     }
-    return $data;
-  }
 
-  private function getMachineNames($term, $element_type){
-    $fields = array_filter(
-      \Drupal::service('entity_field.manager')->getFieldDefinitions($element_type, $term),
-      function ($fieldDefinition) {
-        return $fieldDefinition instanceof \Drupal\field\FieldConfigInterface;
-      }
-    );
-    
-    foreach ($fields as $machine_name => $definition) { 
-      $type = $definition->getSettings()['target_type'] ? $definition->getSettings()['target_type'] : $definition->getType();
-      if(in_array($machine_name,$this->array_machine_names)) $names[$machine_name]= $type;
-    }
-    return $names;
+    return $data;
   }
   
   private function setPrecos($precos){

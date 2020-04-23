@@ -13,19 +13,19 @@ class FeaturesService
 
   private $result;
   private $dataColors;
+  private $entities;
 
   public function sendRequest()
   {
     $colors = new ColorService();
     $this->dataColors = $colors->sendRequest();
 
-    $nodes    = $this->getNodes('veiculo');
-    $models   = $this->getTaxonomy('modelo');
-    $versions =  $this->getTaxonomy('versoes');
+    $this->entities = new EntitiesService;
+    $nodes          = $this->entities->getNodes('veiculo');
 
     foreach ($nodes as $entity) {
-      $model = $models[$entity->get('field_veiculo_modelo')->getString()];
-      $version = $versions[$entity->get('field_veiculo_versao')->getString()];
+      $model    = $this->entities->loadTaxonomyTerm($entity, 'field_veiculo_modelo')['name'];
+      $version  = $this->entities->loadTaxonomyTerm($entity, 'field_veiculo_versao')['name'];
       
       $this->setFeatures($entity, $model, $version);
     }
@@ -33,24 +33,7 @@ class FeaturesService
     return $this->result;
   }
 
-  public function getNodes($content_type){
-    $query = \Drupal::entityQuery('node')
-    ->condition('status', 1)
-    ->condition('type', $content_type)
-    ->execute();
-  
-    return \Drupal\node\Entity\Node::loadMultiple($query);
-  }
-
-  public function getTaxonomy($taxonomy){
-    $terms =\Drupal::entityTypeManager()->getStorage('taxonomy_term')->loadTree($taxonomy);
-    foreach ($terms as $term) {
-      $term_data[$term->tid] = $term->name;
-    }
-    return $term_data;
-  }
-
-  public function getMachineNames($type, $term, $removeTerm=false){
+  public function getMachineNames($type, $term){
     $fields = array_filter(
       \Drupal::service('entity_field.manager')->getFieldDefinitions($type, $term),
       function ($fieldDefinition) {
@@ -58,8 +41,7 @@ class FeaturesService
       }
     );
     foreach ($fields as $machine_name => $definition) {
-      $machine_name_edited = $removeTerm ? str_replace($removeTerm,'',$machine_name) : $machine_name;
-      $names[$definition->getType()][$machine_name_edited] = $machine_name;
+      $names[$definition->getType()][$machine_name] = $machine_name;
     }
     
     return $names;
