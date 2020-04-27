@@ -14,6 +14,7 @@ class PrecosEspeciaisService
   private $veiculo_machine_name;
   private $colors_machine_name;
   private $entities;
+  private $data_precos;
 
   public function sendRequest()
   {
@@ -22,7 +23,9 @@ class PrecosEspeciaisService
     $this->setVeiculosFields();
     
     foreach ($this->entities->getNodes('colors') as $entity) {
-      $precos[] = $this->getPrecos($entity);
+      unset($this->data_precos);
+      $this->getPrecos($entity);
+      $precos[] = $this->data_precos;
     }
     
     $this->setPrecos($precos);
@@ -52,50 +55,6 @@ class PrecosEspeciaisService
     );
   }  
 
-  private function getPrecos($entity){
-    foreach($this->colors_machine_name as $machine_name => $type){
-      switch ($type){
-        case 'node':
-          $node = $this->entities->loadNode($entity, $machine_name);
-          foreach($this->veiculo_machine_name as $node_machine_name => $node_type){
-            switch ($node_type){
-              case 'taxonomy_term':
-                $term = $this->entities->loadTaxonomyTerm($node, $node_machine_name);
-                $data[$node_machine_name] = $term['name'];
-              break;
-              default:
-                $value = $this->entities->getFieldValue($node, $node_machine_name);
-                if(is_array($value)) {
-                  foreach($value as $v){
-                    $data[$node_machine_name][] = $v;
-                  }
-                }
-                else  $data[$node_machine_name] = $value;
-            }
-          }
-        break;
-        case 'taxonomy_term':
-          $term = $this->entities->loadTaxonomyTerm($entity, $machine_name);
-          $data[$machine_name]    = $term['name'];
-          $data['field_cor_hex']  = $this->entities->getFieldValue($term['term'], 'field_cor_hex');
-        break;
-        case 'double_field':
-          foreach($entity->get($machine_name)->getValue() as $key => $values){
-            $data[$values['first']] = $values['second'] ? $values['second'] : '';
-          }
-        break;
-        case 'file':
-          $image_uri = file_create_url($entity->get($machine_name)->entity->uri->value);
-          $data[$machine_name] = $image_uri;
-        break;
-        default:
-          $data[$machine_name] = $this->entities->getFieldValue($entity, $machine_name);
-      }
-    }
-
-    return $data;
-  }
-  
   private function setPrecos($precos){
     foreach($precos as $key => $array_data){
       $modelo = $array_data['field_veiculo_modelo'];
@@ -142,6 +101,63 @@ class PrecosEspeciaisService
     }
     
     $this->result = $result;
+  }
+
+  private function getPrecos($entity){
+    foreach($this->colors_machine_name as $machine_name => $type){
+      switch ($type){
+        case 'node':
+          $this->getNodeValues($entity, $machine_name);
+        break;
+        case 'taxonomy_term':
+          $this->getTaxonomyValues($entity, $machine_name, 'field_cor_hex');
+        break;
+        case 'double_field':
+          $this->getDoubleFieldValues($entity, $machine_name);
+        break;
+        case 'file':
+          $this->getFilesValues($entity, $machine_name);
+        break;
+        default:
+          $this->data_precos[$machine_name] = $this->entities->getFieldValue($entity, $machine_name);
+      }
+    }
+  }
+  
+  private function getNodeValues($entity,$machine_name){
+    $node = $this->entities->loadNode($entity, $machine_name);
+    foreach($this->veiculo_machine_name as $node_machine_name => $node_type){
+      switch ($node_type){
+        case 'taxonomy_term':
+          $this->getTaxonomyValues($node, $node_machine_name);
+        break;
+        default:
+          $value = $this->entities->getFieldValue($node, $node_machine_name);
+          if(is_array($value)) {
+            foreach($value as $v){
+              $this->data_precos[$node_machine_name][] = $v;
+            }
+          }
+          else  $this->data_precos[$node_machine_name] = $value;
+      }
+    }
+  }
+
+  private function getTaxonomyValues($entity, $machine_name, $child_machine_name = false){
+    $term = $this->entities->loadTaxonomyTerm($entity, $machine_name);
+    $this->data_precos[$machine_name]    = $term['name'];
+    if($child_machine_name) $this->data_precos[$child_machine_name]  = $this->entities->getFieldValue($term['term'], $child_machine_name);
+  }
+
+  private function getDoubleFieldValues($entity, $machine_name){
+    foreach($entity->get($machine_name)->getValue() as $key => $values){
+      $this->data_precos[$values['first']] = $values['second'] ? $values['second'] : '';
+    }
+  }
+
+  private function getFilesValues($entity, $machine_name){
+    $image_uri = file_create_url($entity->get($machine_name)->entity->uri->value);
+    $this->data_precos[$machine_name] = $image_uri;
   }
 
   private function RemoveSpecialChar($string){

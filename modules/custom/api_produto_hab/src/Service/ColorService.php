@@ -14,6 +14,7 @@ class ColorService
   private $veiculo_machine_name;
   private $colors_machine_name;
   private $entities;
+  private $data_colors;
 
   public function sendRequest()
   {
@@ -22,7 +23,9 @@ class ColorService
     $this->setVeiculosFields();
 
     foreach ($this->entities->getNodes('colors') as $entity) {
-      $colors[] = $this->getColors($entity);
+      unset($this->data_colors);
+      $this->getColors($entity);
+      $colors[] = $this->data_colors;
     }
     
     $this->setColors($colors);
@@ -49,37 +52,6 @@ class ColorService
     );
   }
 
-  public function getColors($entity){
-    foreach($this->colors_machine_name as $machine_name => $type){
-      switch ($type) {
-        case 'node':
-          $node = $this->entities->loadNode($entity, $machine_name);
-          foreach($this->veiculo_machine_name as $node_machine_name => $node_type){
-            if($node_type == 'taxonomy_term'){
-              $term = $this->entities->loadTaxonomyTerm($node, $node_machine_name);
-              $data[$node_machine_name] = $term['name'];
-            }
-            else{
-              $data[$node_machine_name] = $this->entities->getFieldValue($node, $node_machine_name);
-            }
-          }
-        break;
-        case 'taxonomy_term':
-          $term = $this->entities->loadTaxonomyTerm($entity, $machine_name);
-          $data[$machine_name]    = $term['name'];
-          $data['field_cor_hex']  = $this->entities->getFieldValue($term['term'], 'field_cor_hex');
-        break;
-        case 'file':
-          $image_uri = file_create_url($entity->get($machine_name)->entity->uri->value);
-          $data[$machine_name] = $image_uri;
-        break;
-        default:
-          $data[$machine_name] = $this->entities->getFieldValue($entity, $machine_name);
-      }
-    }
-    return $data;
-  }
-  
   function setColors($colors){
     foreach($colors as $key => $array_colors){
       $modelo = preg_replace('/[^A-Za-z]/', '', strtolower($array_colors['field_veiculo_modelo']));
@@ -97,6 +69,47 @@ class ColorService
       );
     }    
   }
+  
+  public function getColors($entity){
+    foreach($this->colors_machine_name as $machine_name => $type){
+      switch ($type) {
+        case 'node':
+          $this->getNodeValues($entity, $machine_name);
+        break;
+        case 'taxonomy_term':
+          $this->getTaxonomyValues($entity, $machine_name,'field_cor_hex');
+        break;
+        case 'file':
+          $this->getFilesValues($entity, $machine_name);
+        break;
+        default:
+          $this->data_colors[$machine_name] = $this->entities->getFieldValue($entity, $machine_name);
+      }
+    }
+  }
+
+  private function getNodeValues($entity,$machine_name){
+    $node = $this->entities->loadNode($entity, $machine_name);
+    foreach($this->veiculo_machine_name as $node_machine_name => $node_type){
+      if($node_type == 'taxonomy_term'){
+        $this->getTaxonomyValues($node, $node_machine_name);
+      }
+      else{
+        $this->data_colors[$node_machine_name] = $this->entities->getFieldValue($node, $node_machine_name);
+      }
+    }
+  }
+
+  private function getTaxonomyValues($entity, $machine_name, $child_machine_name = false){
+    $term = $this->entities->loadTaxonomyTerm($entity, $machine_name);
+    $this->data_colors[$machine_name]    = $term['name'];
+    if($child_machine_name) $this->data_colors[$child_machine_name]  = $this->entities->getFieldValue($term['term'], $child_machine_name);
+  }
+
+  private function getFilesValues($entity, $machine_name){
+    $image_uri = file_create_url($entity->get($machine_name)->entity->uri->value);
+    $this->data_colors[$machine_name] = $image_uri;
+  }
 
   function RemoveSpecialChar($string){
     $unwanted_array = array(    
@@ -107,4 +120,5 @@ class ColorService
       'ö'=>'o', 'ø'=>'o', 'ù'=>'u', 'ú'=>'u', 'û'=>'u', 'ý'=>'y', 'þ'=>'b', 'ÿ'=>'y' );
     return strtr( $string, $unwanted_array );
   }
+
 }

@@ -37,7 +37,7 @@ class ModelosService
       $this->result[$modelo]['model']             = $name;
       $this->result[$modelo]['machine_name']      = $modelo;
       $this->result[$modelo]['marketing_name']    = 'Honda '.$name;
-      $this->result[$modelo]['product_page_url']  = 'https://www.honda.com.br/automoveis/'.$modelo;
+      $this->result[$modelo]['product_page_url']  = \Drupal::request()->getHost().'/'.$modelo;
       
       foreach($machine_names as $type => $names){ //passa por cada tipo de elemento 
         foreach($names as $key => $machine_name){ //separa o nome da chave e o machine_name
